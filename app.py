@@ -8,7 +8,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:001122@loca
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from models import *
+from model.models import *
 
 if __name__ == '__main__':
     db.create_all()

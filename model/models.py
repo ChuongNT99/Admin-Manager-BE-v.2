@@ -1,11 +1,5 @@
 from app import db
-
-class Role(db.Model):
-    __tablename__ = "roles"
-    role_id = db.Column(db.Integer, primary_key=True)
-    role_name = db.Column(db.String(80), nullable=False)
-    employees = db.relationship('Employee', backref='roles', lazy=True)
-
+import bcrypt
 class Employee(db.Model):
     __tablename__ = "employees"
     employee_id = db.Column(db.Integer, primary_key=True)
@@ -13,8 +7,15 @@ class Employee(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     phone_number = db.Column(db.String(11), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'))
+    admin = db.Column(db.Boolean, nullable=False, default=False)
     bookings = db.relationship('BookingEmployee', backref='employees')
+    def set_password(self, password):
+        # Băm mật khẩu trước khi lưu vào cơ sở dữ liệu
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    def check_password(self, password):
+        # Kiểm tra mật khẩu người dùng khi đăng nhập
+        return bcrypt.checkpw(password.encode('utf-8'), self.password)
 
 class Room(db.Model):
     __tablename__ = "rooms"
