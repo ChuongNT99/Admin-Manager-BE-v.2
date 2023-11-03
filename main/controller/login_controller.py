@@ -1,13 +1,14 @@
-from main import app
-from main.model import Employee, Booking, Room, BookingEmployee
+from main import app, login_manager,db
+from main.model import Employee,RevokedToken, Booking, Room, BookingEmployee
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from flask_login import login_user, logout_user
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt
+from flask_login import login_required,logout_user
 
 
-# @login_manager.user_loader
-# def load_user(employee_id):
-#     return Employee.query.get(int(employee_id))
+@login_manager.user_loader
+def load_user(employee_id):
+    print(Employee.query.get(int(employee_id)))
+    return Employee.query.get(int(employee_id))
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -26,6 +27,21 @@ def login():
 
     access_token = create_access_token(identity=employee.employee_id, additional_claims={"admin": employee.admin})
     return jsonify(access_token=access_token)
+
+@app.route('/logout')
+@jwt_required()
+def logout():
+    logout_user()
+    jti = get_jwt()['jti']
+    revoked_token = RevokedToken(jti=jti)
+    db.session.add(revoked_token)
+    db.session.commit()
+    return jsonify({"message": "Logout successful"})
+
+@app.route('/check_login', methods=['GET'])
+@jwt_required()
+def check_login():
+    return jsonify({"message": "Logged in"})
 
 @app.route('/admin', methods=['GET'])
 @jwt_required()
