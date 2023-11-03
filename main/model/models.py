@@ -1,21 +1,19 @@
-from app import db
+from main.model import db
 import bcrypt
 class Employee(db.Model):
     __tablename__ = "employees"
     employee_id = db.Column(db.Integer, primary_key=True)
     employee_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.String(11), unique=True, nullable=False)
+    phone_number = db.Column(db.Integer, unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     bookings = db.relationship('BookingEmployee', backref='employees')
     def set_password(self, password):
-        # Băm mật khẩu trước khi lưu vào cơ sở dữ liệu
-        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def check_password(self, password):
-        # Kiểm tra mật khẩu người dùng khi đăng nhập
-        return bcrypt.checkpw(password.encode('utf-8'), self.password)
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
 
 class Room(db.Model):
     __tablename__ = "rooms"
@@ -37,4 +35,6 @@ class BookingEmployee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.booking_id'))
     employee_id = db.Column(db.Integer, db.ForeignKey('employees.employee_id'))
-    
+
+if __name__ == '__main__':
+    db.create_all()
