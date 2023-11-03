@@ -1,6 +1,13 @@
 from main.model import db
+from flask_login import UserMixin
 import bcrypt
-class Employee(db.Model):
+
+class RevokedToken(db.Model):
+    __tablename__ = "revoked_tokens"
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(36))
+    
+class Employee(db.Model,UserMixin):
     __tablename__ = "employees"
     employee_id = db.Column(db.Integer, primary_key=True)
     employee_name = db.Column(db.String(80), nullable=False)
