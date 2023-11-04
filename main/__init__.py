@@ -7,7 +7,7 @@ from flask_cors import CORS
 # # from config import config
 
 app = Flask(__name__)
-cors = CORS(app, supports_credentials=True)
+cors = CORS(app)
 @app.after_request
 def after_request(response):
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:001122@loca
 app.config['JWT_SECRET_KEY'] = '001122' 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600
 jwt = JWTManager(app)
 login_manager = LoginManager()
 login_manager.init_app(app)

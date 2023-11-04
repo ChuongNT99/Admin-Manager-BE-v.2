@@ -22,7 +22,7 @@ def get_rooms():
         #         room_list.append(room_data)
         #     return jsonify(rooms=room_list)
         # return jsonify(message="Permission denied"), 403
-        rooms = Room.query.all()``
+        rooms = Room.query.all()
         return jsonify({"rooms": [room.serialize() for room in rooms]})
     else:
         return jsonify({"error": "Internal Server Error"}), 500

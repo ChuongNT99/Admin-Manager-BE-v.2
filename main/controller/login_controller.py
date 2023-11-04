@@ -1,7 +1,7 @@
 from main import app, login_manager,db
 from main.model import Employee,RevokedToken, Booking, Room, BookingEmployee
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity,get_jwt
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies,get_jwt_identity
 from flask_login import login_required,logout_user
 
 
@@ -25,18 +25,17 @@ def login():
     if not employee or not employee.check_password(password):
         return jsonify({"message": "Email or password is incorrect"}), 401
 
-    access_token = create_access_token(identity=employee.employee_id, additional_claims={"admin": employee.admin})
-    return jsonify(access_token=access_token)
+    access_token = create_access_token(identity=employee.employee_id, additional_claims={"role": employee.admin})
+    response = jsonify(message='Logged in successfully')
+    set_access_cookies(response, access_token)
+    return response, 200
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
-    logout_user()
-    jti = get_jwt()['jti']
-    revoked_token = RevokedToken(jti=jti)
-    db.session.add(revoked_token)
-    db.session.commit()
-    return jsonify({"message": "Logout successful"})
+    response = jsonify(message='Logout successfully')
+    unset_jwt_cookies(response)
+    return response, 200
 
 @app.route('/check_login', methods=['GET'])
 @jwt_required()
@@ -48,6 +47,9 @@ def check_login():
 def admin_route():
     current_user = get_jwt_identity()
     print (current_user)
-    if current_user== 1:
-        return jsonify(message="This is an admin-only route")
-    return jsonify(message="Permission denied"), 403
+    if current_user:
+        if current_user== 1:
+            return jsonify(message="This is an admin-only route")
+        return jsonify(message="this is user"), 403
+    return jsonify(message=" not login")
+    
