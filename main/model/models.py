@@ -7,8 +7,9 @@ class RevokedToken(db.Model):
     __tablename__ = "revoked_tokens"
     id = db.Column(db.Integer, primary_key=True)
     jti = db.Column(db.String(36))
-    
-class Employee(db.Model,UserMixin):
+
+
+class Employee(db.Model, UserMixin):
     __tablename__ = "employees"
     employee_id = db.Column(db.Integer, primary_key=True)
     employee_name = db.Column(db.String(80), nullable=False)
@@ -24,13 +25,14 @@ class Employee(db.Model,UserMixin):
 
     def check_password(self, password):
         return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
-    
+
     def __init__(self, employee_name, email, phone_number, password, admin=False):
         self.employee_name = employee_name
         self.email = email
         self.phone_number = phone_number
         self.password = password
         self.admin = admin
+
     def serialize(self):
         return {
             'employee_id': self.employee_id,
@@ -39,6 +41,7 @@ class Employee(db.Model,UserMixin):
             'phone_number': self.phone_number,
             'role': self.admin
         }
+
 
 class Room(db.Model):
     __tablename__ = "rooms"
@@ -63,12 +66,28 @@ class Booking(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey('rooms.room_id'))
     booking_employees = db.relationship('BookingEmployee', backref='bookings')
 
+    def serialize(self):
+        return {
+            'booking_id': self.booking_id,
+            'time_start': self.time_start.strftime('%Y-%m-%d %H:%M:%S'),
+            'time_end': self.time_end.strftime('%Y-%m-%d %H:%M:%S'),
+            'room_id': self.room_id,
+            'booking_employees': [be.serialize() for be in self.booking_employees]
+        }
+
 
 class BookingEmployee(db.Model):
     __tablename__ = "booking_employees"
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey('bookings.booking_id'))
     employee_id = db.Column(db.Integer, db.ForeignKey('employees.employee_id'))
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'booking_id': self.booking_id,
+            'employee_id': self.employee_id
+        }
 
 
 if __name__ == '__main__':

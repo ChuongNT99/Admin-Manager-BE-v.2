@@ -1,8 +1,9 @@
-from main import app
-from main.model import Room
+from main import app, db
+from main.model import Booking, Employee, Room, BookingEmployee
 from flask import Blueprint, jsonify, request
 from datetime import datetime
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
+from flask_login import login_required
 
 
 @app.route("/rooms", methods=["GET"])
@@ -75,7 +76,7 @@ def update_room(room_id):
 def delete_room(room_id):
     current_user = get_jwt_identity()
 
-    if current_user.get == 1:
+    if current_user == 1:
         # Tìm phòng cần xóa theo room_id
         room_to_delete = Room.query.get(room_id)
 

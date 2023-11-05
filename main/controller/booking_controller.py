@@ -1,59 +1,10 @@
-from main import app
-from main.model import Room
+from main import app, db
+from main.model import Booking, Employee, Room, BookingEmployee
 from flask import Blueprint, jsonify, request
 from datetime import datetime
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
-
-
-@app.route("/employees", methods=["GET"])
-@jwt_required()
-def get_employees():
-    current_user = get_jwt_identity()
-    if current_user == 1:
-        employees = Employee.query.all()
-        return jsonify({"employees": [employee.serialize() for employee in employees]})
-    else:
-        return jsonify({"error": "Permission denied"}), 403
-
-
-@app.route("/bookings", methods=["POST"])
-@jwt_required()
-def book_room():
-    current_user = get_jwt_identity()
-    if current_user == 1:
-        data = request.get_json()
-        room_id = data.get('room_id')
-        time_start = data.get('time_start_booking')
-        time_end = data.get('time_end_booking')
-        employee_id = data.get('employee_id')
-
-        # Kiểm tra xem thời gian mới có nằm trong khoảng thời gian đã đặt trước đó không
-        existing_booking = Booking.query.filter(
-            Booking.room_id == room_id,
-            Booking.time_end >= time_start,
-            Booking.time_start <= time_end
-        ).first()
-
-        if existing_booking:
-            return jsonify({'error': 'Room is already booked for this time'}), 400
-
-        try:
-            # Tiếp tục thêm thông tin đặt phòng
-            new_booking = Booking(
-                room_id=room_id, time_start=time_start, time_end=time_end)
-            employee_booking = BookingEmployee(
-                employee_id=employee_id, booking=new_booking)
-
-            db.session.add(new_booking)
-            db.session.add(employee_booking)
-            db.session.commit()
-
-            return jsonify({'message': 'Booking created successfully'})
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'error': 'Internal Server Error'}), 500
-    else:
-        return jsonify({'error': 'Permission denied'}), 403
+from flask_login import login_required
+from sqlalchemy.exc import IntegrityError
 
 
 @app.route("/bookings", methods=["GET"])
@@ -79,22 +30,66 @@ def get_bookings():
         return jsonify({'error': 'Permission denied'}), 403
 
 
+@app.route("/bookings", methods=["POST"])
+@jwt_required()
+def book_room():
+    current_user = get_jwt_identity()
+    if current_user == 1:
+        data = request.get_json()
+        room_id = data.get('room_id')
+        time_start = data.get('time_start')
+        time_end = data.get('time_end')
+        employee_ids = data.get('employee_id')
+
+        if time_start is not None and time_end is not None:
+            existing_booking = Booking.query.filter(
+                Booking.room_id == room_id,
+                Booking.time_end >= time_start,
+                Booking.time_start <= time_end
+            ).first()
+
+            if existing_booking:
+                return jsonify({'error': 'Room is already booked for this time'}), 400
+
+            try:
+                new_booking = Booking(
+                    room_id=room_id, time_start=time_start, time_end=time_end)
+                db.session.add(new_booking)
+                db.session.commit()
+
+                # Thêm danh sách các nhân viên vào cuộc họp
+                for employee_id in employee_ids:
+                    employee_booking = BookingEmployee(
+                        employee_id=employee_id, booking_id=new_booking.booking_id)
+                    db.session.add(employee_booking)
+
+                db.session.commit()
+                return jsonify({'message': 'Booking created successfully'})
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'error': 'Internal Server Error'}), 500
+        else:
+            return jsonify({'error': 'Invalid time input'}), 400
+    else:
+        return jsonify({'error': 'Permission denied'}), 403
+
+
 @app.route("/bookings/<int:booking_id>", methods=["DELETE"])
 @jwt_required()
 def delete_booking(booking_id):
     current_user = get_jwt_identity()
-    if current_user.get == 1:
+
+    if current_user == 1:
         try:
             booking = Booking.query.get(booking_id)
-
             if booking:
-                booking.delete()  # Xóa đặt phòng
-
+                db.session.delete(booking)
+                db.session.commit()
                 return jsonify({'message': 'Booking deleted successfully'})
             else:
                 return jsonify({'error': 'Booking not found'}), 404
         except IntegrityError as e:
-            # Xử lý lỗi nếu có
-            return jsonify({'error': 'Integrity Error'}), 500
+            db.session.rollback()
+            return jsonify({'error': 'IntegrityError: Cannot delete the booking, it might be in use'}), 500
     else:
         return jsonify({'error': 'Permission denied'}), 403
