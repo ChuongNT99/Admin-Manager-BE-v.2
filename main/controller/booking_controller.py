@@ -41,7 +41,10 @@ def book_room():
         time_end = data.get('time_end')
         employee_ids = data.get('employee_id')
 
-        if time_start is not None and time_end is not None:
+        if time_start == time_end:
+            return jsonify({'error': 'Invalid time input'}), 400
+
+        if time_start is not None and time_end is not None and time_start < time_end:
             existing_booking = Booking.query.filter(
                 Booking.room_id == room_id,
                 Booking.time_end >= time_start,

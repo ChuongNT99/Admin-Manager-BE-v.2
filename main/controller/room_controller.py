@@ -17,6 +17,28 @@ def get_rooms():
         return jsonify({"error": "Internal Server Error"}), 500
 
 
+@app.route("/update_room_status", methods=["GET"])
+def update_room_status():
+    current_time = datetime.now()
+    rooms = Room.query.all()
+
+    for room in rooms:
+        current_bookings = Booking.query.filter(
+            Booking.room_id == room.room_id,
+            Booking.time_start <= current_time,
+            Booking.time_end >= current_time
+        ).all()
+
+        if current_bookings:
+            room.status = True
+        else:
+            room.status = False
+
+    db.session.commit()
+
+    return jsonify({"rooms": [room.serialize() for room in rooms]})
+
+
 @app.route("/rooms", methods=["POST"])
 @jwt_required()
 def create_room():
