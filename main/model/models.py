@@ -16,7 +16,7 @@ class Employee(db.Model,UserMixin):
     phone_number = db.Column(db.Integer, unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
-    bookings = db.relationship('BookingEmployee', backref='employees')
+    booking_employees = db.relationship('BookingEmployee', backref='employees')
 
     def set_password(self, password):
         self.password = bcrypt.hashpw(password.encode(
@@ -24,7 +24,21 @@ class Employee(db.Model,UserMixin):
 
     def check_password(self, password):
         return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
-
+    
+    def __init__(self, employee_name, email, phone_number, password, admin=False):
+        self.employee_name = employee_name
+        self.email = email
+        self.phone_number = phone_number
+        self.password = password
+        self.admin = admin
+    def serialize(self):
+        return {
+            'employee_id': self.employee_id,
+            'employee_name': self.employee_name,
+            'email': self.email,
+            'phone_number': self.phone_number,
+            'role': self.admin
+        }
 
 class Room(db.Model):
     __tablename__ = "rooms"
