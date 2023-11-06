@@ -2,36 +2,21 @@ from main.model import db
 from flask_login import UserMixin
 import bcrypt
 
-
-class RevokedToken(db.Model):
-    __tablename__ = "revoked_tokens"
-    id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String(36))
-
-
 class Employee(db.Model, UserMixin):
     __tablename__ = "employees"
     employee_id = db.Column(db.Integer, primary_key=True)
     employee_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    phone_number = db.Column(db.Integer, unique=True, nullable=False)
+    phone_number = db.Column(db.String(11), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    admin = db.Column(db.Boolean, nullable=False, default=False)
+    role = db.Column(db.Boolean, nullable=False, default=False)
     booking_employees = db.relationship('BookingEmployee', backref='employees')
 
     def set_password(self, password):
-        self.password = bcrypt.hashpw(password.encode(
-            'utf-8'), bcrypt.gensalt()).decode('utf-8')
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def check_password(self, password):
         return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
-
-    def __init__(self, employee_name, email, phone_number, password, admin=False):
-        self.employee_name = employee_name
-        self.email = email
-        self.phone_number = phone_number
-        self.password = password
-        self.admin = admin
 
     def serialize(self):
         return {
@@ -39,7 +24,7 @@ class Employee(db.Model, UserMixin):
             'employee_name': self.employee_name,
             'email': self.email,
             'phone_number': self.phone_number,
-            'role': self.admin
+            'role': self.role
         }
 
 

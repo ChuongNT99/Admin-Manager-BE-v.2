@@ -110,16 +110,16 @@ def delete_employee(employee_id):
     if current_user== 1:
         employee = Employee.query.get(employee_id)
 
-    if not employee:
-        return jsonify({'message': 'Nhân viên không tồn tại'}), 404
+        if not employee:
+            return jsonify({'message': 'Nhân viên không tồn tại'}), 404
 
-    # Tìm và xóa tất cả các liên kết trong bảng booking_employees liên quan đến nhân viên
-    booking_employees = BookingEmployee.query.filter_by(employee_id=employee_id).all()
-    for booking_employee in booking_employees:
-        db.session.delete(booking_employee)
+        # Tìm và xóa tất cả các liên kết trong bảng booking_employees liên quan đến nhân viên
+        booking_employees = BookingEmployee.query.filter_by(employee_id=employee_id).all()
+        for booking_employee in booking_employees:
+            db.session.delete(booking_employee)
 
-    # Xóa nhân viên
-    db.session.delete(employee)
-    db.session.commit()
-    return jsonify({'message': 'Nhân viên đã bị xóa thành công, cùng với các liên kết trong booking_employees'}), 200
+        # Xóa nhân viên
+        db.session.delete(employee)
+        db.session.commit()
+        return jsonify({'message': 'Nhân viên đã bị xóa thành công, cùng với các liên kết trong booking_employees'}), 200
     return jsonify(message="this is user"), 403
