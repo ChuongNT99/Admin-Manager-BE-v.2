@@ -49,12 +49,10 @@ def create_room():
         room_name = data.get("room_name")
         status = data.get("status", 0)
 
-        # Thực hiện kiểm tra xem room_name đã tồn tại trong CSDL chưa
         existing_room = Room.query.filter_by(room_name=room_name).first()
         if existing_room:
             return jsonify({"error": "Room already exists"}), 400
 
-        # Tạo phòng mới và lưu vào CSDL
         new_room = Room(room_name=room_name, status=status)
         db.session.add(new_room)
         db.session.commit()
@@ -73,17 +71,14 @@ def update_room(room_id):
         data = request.get_json()
         room_name = data.get("room_name")
 
-        # Kiểm tra xem room_name đã tồn tại trong CSDL cho một phòng khác
         existing_room = Room.query.filter(
             Room.room_id != room_id, Room.room_name == room_name).first()
         if existing_room:
             return jsonify({"error": "Room name already exists"}), 400
 
-        # Tìm phòng cần cập nhật theo room_id
         room_to_update = Room.query.get(room_id)
 
         if room_to_update:
-            # Cập nhật thông tin phòng và lưu vào CSDL
             room_to_update.room_name = room_name
             db.session.commit()
             return jsonify({"message": "Room updated successfully"})
@@ -99,11 +94,9 @@ def delete_room(room_id):
     current_user = get_jwt_identity()
 
     if current_user == 1:
-        # Tìm phòng cần xóa theo room_id
         room_to_delete = Room.query.get(room_id)
 
         if room_to_delete:
-            # Xóa phòng khỏi CSDL và lưu thay đổi
             db.session.delete(room_to_delete)
             db.session.commit()
             return jsonify({"message": "Room deleted successfully"})
