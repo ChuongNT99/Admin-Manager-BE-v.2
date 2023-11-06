@@ -6,4 +6,4 @@ from main.controller import employee_controller
 
 from main.controller import booking_controller
 
-from main.controller import scheduler
+# from main.controller import scheduler

@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 @jwt_required()
 def get_bookings():
     current_user = get_jwt_identity()
-    if current_user == 1:
+    if current_user:
         try:
             bookings = Booking.query.join(Room).join(BookingEmployee).join(Employee).with_entities(
                 Booking.booking_id,

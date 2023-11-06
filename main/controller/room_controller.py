@@ -39,9 +39,9 @@ def update_room_status():
 
         db.session.commit()
 
-        app.logger.info("Current time: %s", current_time)
-        app.logger.info("Updated room status for room %s to %s",
-                        room.room_id, room.status)
+        # app.logger.info("Current time: %s", current_time)
+        # app.logger.info("Updated room status for room %s to %s",
+                        # room.room_id, room.status)
 
         return jsonify({"rooms": [room.serialize() for room in rooms]})
     else:
