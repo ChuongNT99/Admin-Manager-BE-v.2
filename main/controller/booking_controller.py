@@ -13,7 +13,6 @@ def get_bookings():
     current_user = get_jwt_identity()
     if current_user == 1:
         try:
-            # Sử dụng SQLAlchemy để thực hiện truy vấn cơ sở dữ liệu
             bookings = Booking.query.join(Room).join(BookingEmployee).join(Employee).with_entities(
                 Booking.booking_id,
                 Booking.room_id,
@@ -41,7 +40,10 @@ def book_room():
         time_end = data.get('time_end')
         employee_ids = data.get('employee_id')
 
-        if time_start is not None and time_end is not None:
+        if time_start == time_end:
+            return jsonify({'error': 'Invalid time input'}), 400
+
+        if time_start is not None and time_end is not None and time_start < time_end:
             existing_booking = Booking.query.filter(
                 Booking.room_id == room_id,
                 Booking.time_end >= time_start,
@@ -57,7 +59,6 @@ def book_room():
                 db.session.add(new_booking)
                 db.session.commit()
 
-                # Thêm danh sách các nhân viên vào cuộc họp
                 for employee_id in employee_ids:
                     employee_booking = BookingEmployee(
                         employee_id=employee_id, booking_id=new_booking.booking_id)
@@ -125,7 +126,6 @@ def update_booking(booking_id):
             return jsonify({'error': 'Invalid time input'}), 400
     else:
         return jsonify({'error': 'Permission denied'}), 403
-    
 
 @app.route("/bookings/<int:booking_id>", methods=["DELETE"])
 @jwt_required()
