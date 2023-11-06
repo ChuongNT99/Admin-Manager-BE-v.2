@@ -18,25 +18,34 @@ def get_rooms():
 
 
 @app.route("/update_room_status", methods=["GET"])
+@jwt_required()
 def update_room_status():
-    current_time = datetime.now()
-    rooms = Room.query.all()
+    current_user = get_jwt_identity()
+    if current_user == 1:
+        rooms = Room.query.all()
 
-    for room in rooms:
-        current_bookings = Booking.query.filter(
-            Booking.room_id == room.room_id,
-            Booking.time_start <= current_time,
-            Booking.time_end >= current_time
-        ).all()
+        for room in rooms:
+            current_time = datetime.now()
+            current_bookings = Booking.query.filter(
+                Booking.room_id == room.room_id,
+                Booking.time_start <= current_time,
+                Booking.time_end >= current_time
+            ).all()
 
-        if current_bookings:
-            room.status = True
-        else:
-            room.status = False
+            if current_bookings:
+                room.status = True
+            else:
+                room.status = False
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify({"rooms": [room.serialize() for room in rooms]})
+        app.logger.info("Current time: %s", current_time)
+        app.logger.info("Updated room status for room %s to %s",
+                        room.room_id, room.status)
+
+        return jsonify({"rooms": [room.serialize() for room in rooms]})
+    else:
+        return jsonify({"error": "Internal Server Error"}), 500
 
 
 @app.route("/rooms", methods=["POST"])

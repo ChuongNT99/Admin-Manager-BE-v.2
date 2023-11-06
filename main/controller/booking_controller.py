@@ -74,6 +74,7 @@ def book_room():
     else:
         return jsonify({'error': 'Permission denied'}), 403
 
+
 @app.route("/bookings/<int:booking_id>", methods=["PUT"])
 @jwt_required()
 def update_booking(booking_id):
@@ -127,6 +128,7 @@ def update_booking(booking_id):
     else:
         return jsonify({'error': 'Permission denied'}), 403
 
+
 @app.route("/bookings/<int:booking_id>", methods=["DELETE"])
 @jwt_required()
 def delete_booking(booking_id):
@@ -136,6 +138,8 @@ def delete_booking(booking_id):
         try:
             booking = Booking.query.get(booking_id)
             if booking:
+                BookingEmployee.query.filter_by(
+                    booking_id=booking.booking_id).delete()
                 db.session.delete(booking)
                 db.session.commit()
                 return jsonify({'message': 'Booking deleted successfully'})

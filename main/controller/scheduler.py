@@ -9,7 +9,7 @@ scheduler.start()
 
 
 def call_update_room_status():
-    url = 'http://localhost:5000/update_room_status'
+    url = 'http://127.0.0.1:5000/update_room_status'
     response = requests.get(url)
     if response.status_code == 200:
         print(f'Successfully called the API at {datetime.now()}')
