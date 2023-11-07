@@ -20,8 +20,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 jwt = JWTManager(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
 
 
 from main import controller, model
