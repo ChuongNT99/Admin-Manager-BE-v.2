@@ -5,6 +5,7 @@ from datetime import datetime
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, get_jwt
 from sqlalchemy.exc import IntegrityError
 
+
 @app.route("/bookings", methods=["GET"])
 @jwt_required()
 def get_bookings():
@@ -26,7 +27,6 @@ def get_bookings():
     return jsonify({"error": "You are not logged in"})
 
 
-
 @app.route("/bookings", methods=["POST"])
 @jwt_required()
 def book_room():
@@ -40,6 +40,9 @@ def book_room():
             time_start = data.get('time_start')
             time_end = data.get('time_end')
             employee_ids = data.get('employee_id')
+
+            if not employee_ids:
+                return jsonify({'error': 'No staff members have been added to the meeting yet'}), 400
 
             if time_start == time_end:
                 return jsonify({'error': 'Invalid time input'}), 400
@@ -75,6 +78,7 @@ def book_room():
         else:
             return jsonify({'error': 'Permission denied'}), 403
     return jsonify({"error": "You are not logged in"})
+
 
 @app.route("/bookings/<int:booking_id>", methods=["PUT"])
 @jwt_required()
@@ -130,6 +134,7 @@ def update_booking(booking_id):
         else:
             return jsonify({'error': 'Permission denied'}), 403
     return jsonify({"error": "You are not logged in"})
+
 
 @app.route("/bookings/<int:booking_id>", methods=["DELETE"])
 @jwt_required()
