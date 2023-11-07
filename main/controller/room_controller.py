@@ -14,24 +14,26 @@ def get_rooms():
     if current_user:
         if role:
             rooms = Room.query.all()
+
             for room in rooms:
                 current_time = datetime.now()
-            current_bookings = Booking.query.filter(
-                Booking.room_id == room.room_id,
-                Booking.time_start <= current_time,
-                Booking.time_end >= current_time
-            ).all()
+                current_bookings = Booking.query.filter(
+                    Booking.room_id == room.room_id,
+                    Booking.time_start <= current_time,
+                    Booking.time_end >= current_time
+                ).all()
 
-            if current_bookings:
-                room.status = True
-            else:
-                room.status = False
+                if current_bookings:
+                    room.status = True
+                else:
+                    room.status = False
 
             db.session.commit()
             return jsonify({"rooms": [room.serialize() for room in rooms]})
         else:
             return jsonify({"error": "Internal Server Error"}), 500
     return jsonify({"error": "You are not logged in"})
+
 
 @app.route("/rooms", methods=["POST"])
 @jwt_required()
@@ -57,6 +59,7 @@ def create_room():
         else:
             return jsonify({"error": "Permission denied"}), 403
     return jsonify({"error": "You are not logged in"})
+
 
 @app.route("/rooms/<int:room_id>", methods=["PUT"])
 @jwt_required()
@@ -85,6 +88,7 @@ def update_room(room_id):
         else:
             return jsonify({"error": "Permission denied"}), 403
     return jsonify({"error": "You are not logged in"})
+
 
 @app.route("/rooms/<int:room_id>", methods=["DELETE"])
 @jwt_required()
