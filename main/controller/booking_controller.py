@@ -10,7 +10,6 @@ from collections import defaultdict
 
 @app.route("/bookings", methods=["GET"])
 @jwt_required()
-@has_permission("admin")
 def get_bookings():
     try:
         bookings = Booking.query.join(Room).join(BookingEmployee).join(Employee).with_entities(
