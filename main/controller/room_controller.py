@@ -80,6 +80,10 @@ def delete_room(room_id):
             return jsonify({"error": "Cannot delete a busy room"}), 400
 
         bookings_to_delete = Booking.query.filter_by(room_id=room_id).all()
+        booking_ids = [booking.booking_id for booking in bookings_to_delete]
+
+        BookingEmployee.query.filter(BookingEmployee.booking_id.in_(
+            booking_ids)).delete(synchronize_session=False)
 
         for booking in bookings_to_delete:
             db.session.delete(booking)
