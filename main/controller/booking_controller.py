@@ -41,8 +41,10 @@ def get_bookings():
                 booking_dict["employee_name"])
             grouped_bookings[booking_id]["room_id"] = booking_dict["room_id"]
             grouped_bookings[booking_id]["room_name"] = booking_dict["room_name"]
-            grouped_bookings[booking_id]["time_end"] = booking_dict["time_end"]
-            grouped_bookings[booking_id]["time_start"] = booking_dict["time_start"]
+            grouped_bookings[booking_id]["time_end"] = booking_dict["time_end"].strftime(
+                '%Y-%m-%d %H:%M:%S')
+            grouped_bookings[booking_id]["time_start"] = booking_dict["time_start"].strftime(
+                '%Y-%m-%d %H:%M:%S')
 
         result = {"bookings": list(grouped_bookings.values())}
         return jsonify(result)
