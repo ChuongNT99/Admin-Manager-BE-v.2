@@ -5,6 +5,7 @@ from datetime import datetime
 from flask_jwt_extended import JWTManager, jwt_required
 from main.controller.has_permission import has_permission
 from sqlalchemy.exc import IntegrityError
+from collections import defaultdict
 
 
 @app.route("/bookings", methods=["GET"])
@@ -21,7 +22,31 @@ def get_bookings():
             Employee.employee_name
         ).all()
 
-        return jsonify({'bookings': [booking._asdict() for booking in bookings]})
+        grouped_bookings = {}
+
+        for booking in bookings:
+            booking_dict = booking._asdict()
+            booking_id = booking_dict["booking_id"]
+
+            if booking_id not in grouped_bookings:
+                grouped_bookings[booking_id] = {
+                    "booking_id": booking_id,
+                    "employee_name": [],
+                    "room_id": None,
+                    "room_name": None,
+                    "time_end": None,
+                    "time_start": None
+                }
+
+            grouped_bookings[booking_id]["employee_name"].append(
+                booking_dict["employee_name"])
+            grouped_bookings[booking_id]["room_id"] = booking_dict["room_id"]
+            grouped_bookings[booking_id]["room_name"] = booking_dict["room_name"]
+            grouped_bookings[booking_id]["time_end"] = booking_dict["time_end"]
+            grouped_bookings[booking_id]["time_start"] = booking_dict["time_start"]
+
+        result = {"bookings": list(grouped_bookings.values())}
+        return jsonify(result)
     except Exception as e:
         return jsonify({'error': 'Internal Server Error'}), 500
 
