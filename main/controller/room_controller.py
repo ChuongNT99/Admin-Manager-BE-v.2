@@ -76,8 +76,17 @@ def delete_room(room_id):
     room_to_delete = Room.query.get(room_id)
 
     if room_to_delete:
+        if room_to_delete.status == 1:
+            return jsonify({"error": "Cannot delete a busy room"}), 400
+
+        bookings_to_delete = Booking.query.filter_by(room_id=room_id).all()
+
+        for booking in bookings_to_delete:
+            db.session.delete(booking)
+
         db.session.delete(room_to_delete)
         db.session.commit()
-        return jsonify({"message": "Room deleted successfully"})
+
+        return jsonify({"message": "Room and associated bookings deleted successfully"})
     else:
         return jsonify({"error": "Room not found"}), 404
