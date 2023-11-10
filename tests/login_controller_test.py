@@ -1,5 +1,5 @@
 from main import app
-from main.model import Room, Booking
+from main.model import Room, Booking, Employee
 from datetime import datetime, timedelta
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from flask_jwt_extended import jwt_required
@@ -64,7 +64,7 @@ class TestLoginAPI(TestCase):
     def test_login_invalid_credentials(self):
         invalid_credentials = {
             "email": "admin@gmail.com",
-            "password": "aádasdasd"
+            "password": "12346"
         }
 
         response = self.app.post(
