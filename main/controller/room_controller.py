@@ -54,6 +54,9 @@ def update_room(room_id):
     data = request.get_json()
     room_name = data.get("room_name")
 
+    if not room_name:
+        return jsonify({"error": "Room name cannot be empty"}), 400
+
     existing_room = Room.query.filter(
         Room.room_id != room_id, Room.room_name == room_name).first()
     if existing_room:
