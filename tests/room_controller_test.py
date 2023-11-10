@@ -10,9 +10,7 @@ import logging
 
 
 class TestRoomController(TestCase):
-
     def create_app(self):
-
         return app
 
     def setUp(self):
@@ -21,51 +19,36 @@ class TestRoomController(TestCase):
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
-        with app.app_context():
-            self.session.begin()
-
-            self.create_sample_data()
-
     def tearDown(self):
-        with app.app_context():
-            self.session.rollback()
-            self.session.close()
-            self.engine.dispose()
+        self.session.rollback()
+        self.session.close()
+        self.engine.dispose()
 
     def create_sample_data(self):
-        with app.app_context():
-            room1 = Room(room_name="CAU TIEN", status=True)
-            room2 = Room(room_name="SANG TAO", status=False)
+        room1 = Room(room_name="CAU TIEN", status=True)
+        room2 = Room(room_name="SANG TAO", status=False)
 
-            current_time = datetime.now()
-            booking1 = Booking(
-                room_id=room1.room_id,
-                time_start=current_time,
-                time_end=current_time + timedelta(hours=1)
-            )
-            booking2 = Booking(
-                room_id=room2.room_id,
-                time_start=current_time - timedelta(hours=1),
-                time_end=current_time + timedelta(hours=2)
-            )
+        current_time = datetime.now()
+        booking1 = Booking(
+            room_id=room1.room_id,
+            time_start=current_time,
+            time_end=current_time + timedelta(hours=1)
+        )
+        booking2 = Booking(
+            room_id=room2.room_id,
+            time_start=current_time - timedelta(hours=1),
+            time_end=current_time + timedelta(hours=2)
+        )
 
-            self.session.add(room1)
-            self.session.add(room2)
-            self.session.add(booking1)
-            self.session.add(booking2)
-            self.session.commit()
-
-    def create_jwt_token(self, user_id, role):
-        with app.app_context():
-            expires = timedelta(days=1)
-            token_data = {
-                "user_id": user_id,
-                "role": role,
-            }
-            return create_access_token(identity=token_data, expires_delta=expires)
+        self.session.add(room1)
+        self.session.add(room2)
+        self.session.add(booking1)
+        self.session.add(booking2)
+        self.session.commit()
 
     def test_get_rooms_as_admin(self):
-        admin_token = self.create_jwt_token(user_id=1, role=True)
+        self.create_sample_data()
+        admin_token = self.create_jwt_token(employee_id=1, role=True)
 
         response = self.client.get(
             "/rooms", headers={"Authorization": f"Bearer {admin_token}"})
