@@ -110,7 +110,7 @@ def update_booking(booking_id):
 
     if time_start is not None and time_end is not None and employee_ids is not None:
         if time_end <= time_start:
-            return jsonify({'error': 'invalid time input '}), 400
+            return jsonify({'error': 'Invalid time input'}), 400
         existing_booking = Booking.query.filter(
             Booking.room_id == room_id,
             Booking.time_end >= time_start,
@@ -130,6 +130,9 @@ def update_booking(booking_id):
             booking.time_start = time_start
             booking.time_end = time_end
 
+            if not employee_ids:
+                return jsonify({'error': 'At least one employee must be selected'}), 400
+
             for employee_booking in booking.booking_employees:
                 db.session.delete(employee_booking)
 
@@ -144,7 +147,8 @@ def update_booking(booking_id):
             db.session.rollback()
             return jsonify({'error': 'Internal Server Error'}), 500
     else:
-        return jsonify({'error': 'Invalid time input'}), 400
+        return jsonify({'error': 'Invalid time input or missing employee_id'}), 400
+
 
 
 @app.route("/bookings/<int:booking_id>", methods=["DELETE"])
