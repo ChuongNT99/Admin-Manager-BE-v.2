@@ -1,4 +1,4 @@
-from main import app, db
+from main import app
 from main.model import Room, Booking
 from datetime import datetime, timedelta
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_testing import TestCase
+import logging
 
 
 class TestRoomController(TestCase):
@@ -21,13 +22,13 @@ class TestRoomController(TestCase):
         self.session = Session()
 
         with app.app_context():
-            db.session.begin()
+            self.session.begin()
 
             self.create_sample_data()
 
     def tearDown(self):
         with app.app_context():
-            db.session.rollback()
+            self.session.rollback()
             self.session.close()
             self.engine.dispose()
 
@@ -48,11 +49,11 @@ class TestRoomController(TestCase):
                 time_end=current_time + timedelta(hours=2)
             )
 
-            db.session.add(room1)
-            db.session.add(room2)
-            db.session.add(booking1)
-            db.session.add(booking2)
-            db.session.commit()
+            self.session.add(room1)
+            self.session.add(room2)
+            self.session.add(booking1)
+            self.session.add(booking2)
+            self.session.commit()
 
     def create_jwt_token(self, user_id, role):
         with app.app_context():
