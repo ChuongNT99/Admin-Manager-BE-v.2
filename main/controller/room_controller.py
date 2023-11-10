@@ -36,6 +36,8 @@ def create_room():
     room_name = data.get("room_name")
     status = data.get("status", 0)
 
+    if not room_name or room_name.isspace():
+        return jsonify({"error": "Room name cannot be empty"}), 400
     existing_room = Room.query.filter_by(room_name=room_name).first()
     if existing_room:
         return jsonify({"error": "Room already exists"}), 400
@@ -53,6 +55,9 @@ def create_room():
 def update_room(room_id):
     data = request.get_json()
     room_name = data.get("room_name")
+    if not room_name or room_name.isspace():
+        return jsonify({"error": "Room name cannot be empty"}), 400
+
 
     existing_room = Room.query.filter(
         Room.room_id != room_id, Room.room_name == room_name).first()

@@ -16,6 +16,9 @@ def create_employee():
     password = data.get('password')
     role = data.get('role', False)
 
+    if not employee_name or not email or not phone_number or not password:
+        return jsonify({'error': 'invalid input!'}), 404
+
     existing_employee = Employee.query.filter_by(email=email).first()
     if existing_employee:
         return jsonify({'error': 'Email existing'}), 400
@@ -57,28 +60,31 @@ def get_employee(employee_id):
 @has_permission("admin")
 def update_employee(employee_id):
     data = request.get_json()
+    _employee_name = data.get("employee_name")
+    _email = data.get("email")
+    _phone_number = data.get("phone_number")
     employee = Employee.query.get(employee_id)
 
     if not employee:
-        return jsonify({'message': 'Employee is None'}), 404
+        return jsonify({'error': 'Employee is None'}), 404
 
-    if 'employee_name' in data:
-        employee.employee_name = data['employee_name']
-    if 'email' in data:
-        existing_employee = Employee.query.filter(
-            Employee.employee_id != employee_id, Employee.email == data['email']).first()
-        if existing_employee:
-            return jsonify({'message': 'Email existing'}), 400
+    if not _employee_name or not _email or not _phone_number:
+        return jsonify({'error': 'invalid input!'}), 400
+
+    employee.employee_name = _employee_name
+
+    existing_employee = Employee.query.filter(
+        Employee.employee_id != employee_id, Employee.email == data['email']).first()
+    if existing_employee:
+        return jsonify({'error': 'Email existing'}), 400
+    else:
         employee.email = data['email']
-    if 'phone_number' in data:
-        existing_employee = Employee.query.filter(
-            Employee.employee_id != employee_id, Employee.phone_number == data['phone_number']).first()
-        if existing_employee:
-            return jsonify({'message': 'Phone number existing'}), 400
-        employee.phone_number = data['phone_number']
-    if 'password' in data:
-        employee.set_password(data['password'])
-
+    existing_employee = Employee.query.filter(
+        Employee.employee_id != employee_id, Employee.phone_number == data['phone_number']).first()
+    if existing_employee:
+        return jsonify({'error': 'Phone number existing'}), 400
+    else:
+        employee.phone_number = _phone_number
     db.session.commit()
     return jsonify({'message': 'Update employee successfully'}), 200
 
@@ -100,4 +106,3 @@ def delete_employee(employee_id):
     db.session.delete(employee)
     db.session.commit()
     return jsonify({'message': 'Delete employee successfully'}), 200
-

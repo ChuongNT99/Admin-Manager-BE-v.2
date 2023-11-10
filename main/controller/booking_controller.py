@@ -18,7 +18,9 @@ def get_bookings():
             Booking.time_start,
             Booking.time_end,
             Room.room_name,
+            BookingEmployee.employee_id,
             Employee.employee_name
+            
         ).all()
 
         grouped_bookings = {}
@@ -34,9 +36,11 @@ def get_bookings():
                     "room_id": None,
                     "room_name": None,
                     "time_end": None,
-                    "time_start": None
+                    "time_start": None,
+                    "employee_id": []
                 }
-
+            grouped_bookings[booking_id]["employee_id"].append(
+                booking_dict["employee_id"])
             grouped_bookings[booking_id]["employee_name"].append(
                 booking_dict["employee_name"])
             grouped_bookings[booking_id]["room_id"] = booking_dict["room_id"]
