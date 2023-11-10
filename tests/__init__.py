@@ -1,2 +1,1 @@
-from flask_jwt_extended import JWTManager
-from flask_sqlalchemy import SQLAlchemy
+from room_controller_test import TestRoomController
